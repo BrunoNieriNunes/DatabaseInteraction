@@ -577,7 +577,7 @@
       waveSurfer.play();
       theInterval = setInterval(() => {
         let val = findVideoStamp();
-        if(previousStamp !== val && api.playbackRange === null && !seekedByTab){
+        if(previousStamp !== val && api.playbackRange === null && !shouldLoop){
           api.tickPosition = tickStamps[previousStamp];
           val = findVideoStamp();
         }
