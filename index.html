@@ -384,7 +384,7 @@
     }
 
     function APILoad(e){
-      const data = typeof e.target !== 'undefined' && e.target.files.length > 0 ? e.target.files[0].name : e.tabName;
+      const data = typeof e.target !== 'undefined' && e.target.files.length > 0 ? URL.createObjectURL(e.target.files[0]) : e.tabName;
       settings.file = data;
       api.load(data);
     }
