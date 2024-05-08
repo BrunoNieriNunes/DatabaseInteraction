@@ -425,7 +425,7 @@
         const res1 = await sb.storage.from('tabs').upload(tabFile.name, tabFile);
         const res2 = await sb.storage.from('videos').upload(vidFile.name, vidFile);
 
-        alert('Link pra embedar: embed-this-mf.vercel.app?id=' + data.data[0].id);
+        alert('Link pra embedar: embed-this-mf.vercel.app/?id=' + data.data[0].id);
 
       }
       else{
