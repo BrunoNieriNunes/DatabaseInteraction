@@ -369,14 +369,16 @@
       APILoad(e);
     });
 
+
     function vidLoad(e){
+      vidFile = e.target.files[0];
       wsRegions.clearRegions();
       while (compasses.length > 0)
         compasses.pop();
       var list = document.getElementById("myList");
       while (list.hasChildNodes())
         list.removeChild(list.children[0]);
-      var media = typeof e.target !== 'undefined' && e.target.files.length > 0 ? URL.createObjectURL(e.target.files[0]) : e.vidName;
+      var media = URL.createObjectURL(vidFile);
       var video = document.getElementById("theVideo");
       video.src = media;
       video.style.display = "block";
@@ -384,10 +386,17 @@
     }
 
     function APILoad(e){
-      const data = typeof e.target !== 'undefined' && e.target.files.length > 0 ? URL.createObjectURL(e.target.files[0]) : e.tabName;
+      myVideo.pause();
+      tabFile = e.target.files[0];
+      const data = URL.createObjectURL(tabFile);
       settings.file = data;
       api.load(data);
     }
+
+    var tabFile;
+    var vidFile;
+    var querystring = window.location.search;
+    var params = new URLSearchParams(querystring);
 
     document.addEventListener('keypress', (e) => {
       if (e.keyCode == 116) {
@@ -406,18 +415,18 @@
 
     async function insert(){
       if(myVideo.src !== '' && api.score !== null){
-        const {data, error} = await sb.from("tabs").insert({
-          vidName: fileName.name,
-          tabName: settings.file,
+        const data = await sb.from("tabs").insert({
+          vidName: vidFile.name,
+          tabName: tabFile.name,
           compasses: compasses,
           pauseStamps: pauseStamps
-        })
-        if(error === null){
-          alert('Salvo com sucesso');
-        }
-        else{
-          alert('Não foi possível salvar, erro: ' + error);
-        }
+        }).select();
+
+        const res1 = await sb.storage.from('tabs').upload(tabFile.name, tabFile);
+        const res2 = await sb.storage.from('videos').upload(vidFile.name, vidFile);
+
+        alert('Link pra embedar: embed-this-mf.vercel.app?id=' + data.data[0].id);
+
       }
       else{
         alert('Vídeo e/ou tablatura não carregados');
