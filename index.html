@@ -405,9 +405,9 @@
     var fileName;
 
     async function insert(){
-      if(myVideo.src !== ''){
+      if(myVideo.src !== '' && api.score !== null){
         const {data, error} = await sb.from("tabs").insert({
-          vidName: fileName,
+          vidName: fileName.name,
           tabName: settings.file,
           compasses: compasses,
           pauseStamps: pauseStamps
@@ -420,7 +420,7 @@
         }
       }
       else{
-        alert('Vídeo não carregado');
+        alert('Vídeo e/ou tablatura não carregados');
       }
     }
 
