@@ -628,11 +628,9 @@
           for(var j = temp; j < i; j++)
             acm += expectedDuration[j];
           percent = i > 0 ? (myVideo.currentTime * 1000 - acm) / (expectedDuration[i]) : 0;
-          console.log(percent);
         }
         else{
           percent = i > 0 ? (myVideo.currentTime * 1000 - expectedStamps[i - 1]) / expectedDuration[i] : 0;
-          console.log(percent);
         }
       }
       api.tickPosition += i > 0 ? percent * (api.score.masterBars[i].start - api.score.masterBars[i - 1].start) : 0;
