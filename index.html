@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Site Foda</title>
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/alphaTab.js"></script>
+  <script src="https://unpkg.com/wavesurfer.js"></script>
+  <script src="https://kit.fontawesome.com/4a47e623a7.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
+  <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/hover.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style type="text/css">
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+    }
+
+    .container{
+      display: flow-root;
+    }
+
+    .left-wrap{
+      width: 50%;
+      height: auto;
+      float: left;
+    }
+
+    .right-wrap{
+      width: 50%;
+      height: auto;
+      float: right;
+      overflow: auto;
+    }
+    
+    .at-wrap {
+      width: 50vw;
+      height: 80vh;
+      margin: 0 auto;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-wrap{
+      width: 100%;
+      height: auto;
+      overflow: auto;
+      float: left;
+      clear: left;
+    }
+  
+    .audio-wrap{
+      width: 100%;
+      height: auto;
+      overflow: auto;
+      float: left;
+      clear: left;
+    }
+
+    .button-wrap{
+      width: 100%;
+      height: auto;
+      overflow: auto;
+      float: left;
+      clear: left;
+    }
+
+    .file-wrap{
+      width: 100%;
+      height: auto;
+      overflow: auto;
+      float: left;
+      clear: left;
+    }
+    
+    .at-content {
+      position: relative;
+      overflow: hidden;
+      flex: 1 1 auto;
+    }
+    
+    /** Sidebar **/
+    .at-sidebar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      max-width: 70px;
+      width: auto;
+      display: flex;
+      align-content: stretch;
+      z-index: 1001;
+      overflow: hidden;
+      border-right: 1px solid rgba(0, 0, 0, 0.12);
+      background: #f7f7f7;
+    }
+
+    .at-sidebar:hover {
+      max-width: 400px;
+      transition: max-width 0.2s;
+      overflow-y: auto;
+    }
+
+    .at-viewport {
+      overflow-y: auto;
+      position: absolute;
+      top: 0;
+      left: 70px;
+      right: 0;
+      bottom: 0;
+      padding-right: 20px;
+    }
+
+    .at-footer {
+      flex: 0 0 auto;
+      background: #436d9d;
+      color: #fff;
+    }
+
+    /** Overlay **/
+
+    .at-overlay {
+      /** Fill Parent */
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1002;
+
+      /* Blurry dark shade */
+      backdrop-filter: blur(3px);
+      background: rgba(0, 0, 0, 0.5);
+
+      /** center content */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .at-overlay-content {
+      /* white box with drop-shadow */
+      margin-top: 20px;
+      background: #fff;
+      box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.3);
+      padding: 10px;
+    }
+
+    /** Track selector **/
+    .at-track {
+      display: flex;
+      position: relative;
+      padding: 5px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .at-track:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .at-track>.at-track-icon,
+    .at-track>.at-track-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .at-track>.at-track-icon {
+      flex-shrink: 0;
+      font-size: 32px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      width: 64px;
+      height: 64px;
+      margin-right: 5px;
+      align-items: center;
+    }
+
+    .at-track-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .at-track:hover>.at-track-icon {
+      opacity: 0.8;
+    }
+
+    .at-track.active {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .at-track.active>.at-track-icon {
+      color: #4972a1;
+      opacity: 1;
+    }
+
+    .at-track>.at-track-name {
+      font-weight: 500;
+    }
+
+    /** Footer **/
+    .at-controls {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: space-between;
+      background: #436d9d;
+      color: #fff;
+    }
+
+    .at-controls>div {
+      display: flex;
+      justify-content: flex-start;
+      align-content: center;
+      align-items: center;
+    }
+
+    .at-controls>div>* {
+      display: flex;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px;
+      margin: 0 3px;
+    }
+
+    .at-controls .btn {
+      color: #fff;
+      border-radius: 0;
+      height: 40px;
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    .at-controls .btn.disabled {
+      cursor: progress;
+      opacity: 0.5;
+    }
+
+    .at-controls a.active {
+      background: #5588c7;
+      text-decoration: none;
+    }
+
+    .at-controls .btn i {
+      vertical-align: top;
+    }
+
+    .at-controls select {
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+      width: 100%;
+      height: 40px;
+      background: #436d9d;
+      padding: 4px 10px;
+      color: #fff;
+      font-size: 16px;
+      text-align-last: center;
+      text-align: center;
+      -ms-text-align-last: center;
+      -moz-text-align-last: center;
+      cursor: pointer;
+    }
+
+    .at-song-title {
+      font-weight: bold;
+    }
+
+    .at-cursor-bar {
+      /* Defines the color of the bar background when a bar is played */
+      background: rgba(255, 242, 0, 0.25);
+    }
+
+    .at-selection div {
+      /* Defines the color of the selection background */
+      background: rgba(64, 64, 255, 0.1);
+    }
+
+    .at-cursor-beat {
+      /* Defines the beat cursor */
+      background: rgba(64, 64, 255, 0.75);
+      width: 3px;
+    }
+
+    .at-highlight * {
+      /* Defines the color of the music symbols when they are being played (svg) */
+      fill: #0078ff;
+      stroke: #0078ff;
+    }
+
+
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="left-wrap">
+      <div class="file-wrap">
+        <input type="file" id="inputV" name="input_video" accept="video/*">
+        <input type="file" id="inputT" name="input_tab" accept=".gp3,.gp4,.gp5,.gpx,.gp,.xml,.cap">
+        <button onclick="insert()">Salvar</button>
+      </div>
+
+      <div class="video-wrap">
+        <video id="theVideo" controls width="100%"></video>
+        </video>
+      </div>
+
+      <div class="audio-wrap">
+        <div id="audiowave"></div>
+        <div class="audio-controls">
+          <button onclick="zoomIn()" class="btn-zoom-in">
+            <i class="fa-solid fa-magnifying-glass-plus"></i>
+          </button>
+          <button onclick="zoomOut()" class="btn-zoom-out">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="button-wrap">
+        <button onclick="addTime()" type="button">Adicionar compasso</button>
+        <button onclick="editTime()" type="button">Editar compasso</button>
+        <button onclick="deleteTime()" type="button">Deletar compasso</button>
+        <button onclick="insertTime()" type="button">Inserir compasso</button>
+        <button onclick="togglePause()" type="button">Alternar compasso de pausa</button>
+        <input id="indexCmp" type="number" placeholder="Índice">
+        <input id="timeCmp" type="number" placeholder="Valor">
+        <ol id="myList"></ol>
+        <ul id="highlights"></ul>
+      </div>
+    </div>
+
+    <div class="right-wrap">
+      <div class="at-wrap">
+        <div class="at-overlay">
+          <div class="at-overlay-content">
+            Music sheet is loading
+          </div>
+        </div>
+        <div class="at-content">
+          <div class="at-viewport">
+            <div class="at-main"></div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    const sb = supabase.createClient('https://kmvkcftembtxisodsfih.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttdmtjZnRlbWJ0eGlzb2RzZmloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ4ODAzMTEsImV4cCI6MjAzMDQ1NjMxMX0.FIezOyJzdZh57tbsLtujH8rTzW9vb2efOmGvmgz45G8');
+
+    document.getElementById("inputV").addEventListener("change", (e) => {
+      if(e.target.files.length === 0)
+        return;
+      fileName = e.target.files[0];
+      vidLoad(e);
+    });
+
+    document.getElementById("inputT").addEventListener("change", (e) => {
+      APILoad(e);
+    });
+
+    function vidLoad(e){
+      wsRegions.clearRegions();
+      while (compasses.length > 0)
+        compasses.pop();
+      var list = document.getElementById("myList");
+      while (list.hasChildNodes())
+        list.removeChild(list.children[0]);
+      var media = typeof e.target !== 'undefined' && e.target.files.length > 0 ? URL.createObjectURL(e.target.files[0]) : e.vidName;
+      var video = document.getElementById("theVideo");
+      video.src = media;
+      video.style.display = "block";
+      waveSurfer.load(media);
+    }
+
+    function APILoad(e){
+      const data = typeof e.target !== 'undefined' && e.target.files.length > 0 ? e.target.files[0].name : e.tabName;
+      settings.file = data;
+      api.load(data);
+    }
+
+    document.addEventListener('keypress', (e) => {
+      if (e.keyCode == 116) {
+        addTime();
+      }
+    });
+
+    async function signUp() {
+      const { data, error } = await sb.auth.signUp({
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      });
+    }
+
+    var fileName;
+
+    async function insert(){
+      if(myVideo.src !== ''){
+        const {data, error} = await sb.from("tabs").insert({
+          vidName: fileName,
+          tabName: settings.file,
+          compasses: compasses,
+          pauseStamps: pauseStamps
+        })
+        if(error === null){
+          alert('Salvo com sucesso');
+        }
+        else{
+          alert('Não foi possível salvar, erro: ' + error);
+        }
+      }
+      else{
+        alert('Vídeo não carregado');
+      }
+    }
+
+    async function showAll(){
+      const res = await sb.from("tabs").select('*');
+    }
+
+    async function importTab(){
+      const res = await sb.from("tabs").select('*');
+      const data = res.data[document.getElementById('arrayId').value];
+      vidLoad(data);
+      APILoad(data);
+    }
+
+    function updateRegions() {
+      wsRegions.getRegions().sort(sortFunction);
+      for (var i = 0; i < wsRegions.getRegions().length; i++) {
+        wsRegions.getRegions()[i].setOptions({ content: "" + (findIndex(wsRegions.getRegions()[i]) + 1) });
+      }
+    };
+
+    function sortFunction(a, b) {
+      if (a.start < b.start)
+        return -1;
+      else if (a.start > b.start)
+        return 1;
+      return 0;
+    }
+
+    function addTime() {
+      compasses.push(parseInt(myVideo.currentTime * 1000));
+      compasses.sort();
+      wsRegions.addRegion({
+        start: myVideo.currentTime,
+        color: 'red',
+        content: "" + compasses.length
+      });
+      updateAll();
+    };
+
+    function editTime() {
+      var list = document.getElementById("myList");
+      var index = document.getElementById("indexCmp").value;
+      var newTime = document.getElementById("timeCmp").value;
+      if (index <= list.children.length) {
+        wsRegions.getRegions()[index - 1].setOptions({ start: newTime / 1000 });
+        compasses[index - 1] = newTime;
+        updateAll();
+      }
+    };
+
+    function deleteTime() {
+      var list = document.getElementById("myList");
+      var index = document.getElementById("indexCmp").value;
+      var newTime = document.getElementById("timeCmp").value;
+      if (index <= list.children.length) {
+        wsRegions.getRegions()[index - 1].remove();
+        compasses.splice(index - 1, 1);
+        updateAll();
+      }
+    };
+
+    function insertTime() {
+      var list = document.getElementById("myList");
+      var index = document.getElementById("indexCmp").value;
+      var newTime = document.getElementById("timeCmp").value;
+      if (index <= list.children.length) {
+        wsRegions.addRegion({
+          start: newTime / 1000,
+          color: 'red',
+          content: "" + index
+        });
+        for (var i = wsRegions.getRegions().length - 1; i >= index; i--) {
+          [wsRegions.getRegions()[i], wsRegions.getRegions()[i - 1]] = [wsRegions.getRegions()[i - 1], wsRegions.getRegions()[i]];
+        }
+        compasses.splice(index - 1, 0, newTime);
+        updateAll();
+      }
+    }
+
+    function togglePause(){
+      var hl = document.getElementById("highlights");
+      var index = parseInt(document.getElementById("indexCmp").value);
+      if(index > expectedStamps.lenght)
+        return;
+      if(!pauseStamps.includes(index)){
+        pauseStamps.push(index);
+      }
+      else{
+        pauseStamps.splice(pauseStamps.indexOf(index), 1);
+      }
+      while (hl.hasChildNodes())
+        hl.removeChild(hl.children[0]);
+      for (var i = 0; i < pauseStamps.length; ++i) {
+        let li = document.createElement('li');
+        li.innerText = pauseStamps[i];
+        hl.appendChild(li);
+      }
+    }
+
+    /*
+    while (list.hasChildNodes())
+        list.removeChild(list.children[0]);
+      for (var i = 0; i < compasses.length; ++i) {
+        let li = document.createElement('li');
+        li.innerText = compasses[i];
+        list.appendChild(li);
+    */
+
+    function findIndex(e) {
+      for (var i = 0; i < wsRegions.getRegions().length; i++) {
+        if (wsRegions.getRegions()[i].id === e.id) {
+          return i;
+        }
+      }
+    };
+
+    var waveSurfer = WaveSurfer.create({
+      container: "#audiowave",
+      waveColor: "#5df9de",
+      height: 240,
+      cursorColor: "blue",
+      width: '100%',
+      plugins: [
+        WaveSurfer.Hover.create({
+          lineColor: "green",
+          lineWidth: 2,
+          labelBackground: '#555',
+          labelColor: '#fff',
+          labelSize: '11px',
+        }),
+      ]
+    });
+
+    waveSurfer.setMuted(true);
+    const wsRegions = waveSurfer.registerPlugin(WaveSurfer.Regions.create());
+    wsRegions.on("region-updated", (e) => {
+      compasses[findIndex(e)] = e.start * 1000;
+      wsRegions.getRegions().sort(sortFunction);
+      updateAll();
+    });
+
+    let myVideo = document.getElementById("theVideo");
+
+    var theInterval;
+    var pauseStamps = new Array();
+    var compasses = new Array();
+    var videoToTab = new Array(compasses.length);
+    //var rememberTime = 0;
+
+    myVideo.addEventListener("play", () => {
+      //api.tickPosition = rememberTime;
+      api.playbackSpeed = findPlaybackSpeed();
+      waveSurfer.play();
+      theInterval = setInterval(() => {
+        let val = findVideoStamp();
+        if(previousStamp !== val && api.playbackRange === null && !seekedByTab){
+          api.tickPosition = tickStamps[previousStamp];
+          val = findVideoStamp();
+        }
+        if (!pauseStamps.includes(val) && val !== 0){
+          api.play();
+        }
+        else{
+          api.pause();
+        }
+        previousStamp = val;
+      }, 100);
+    });
+
+    var previousStamp = 0;
+    var wasPaused = false;
+
+    myVideo.addEventListener("pause", () => {
+      previousStamp = findVideoStamp();
+      clearInterval(theInterval);
+      //rememberTime = api.tickPosition;
+      api.pause();
+      //api.tickPosition = rememberTime;
+      waveSurfer.pause();
+    });
+
+    var shouldLoop = false;
+
+    myVideo.addEventListener("seeked", () => {
+      waveSurfer.seekTo(myVideo.currentTime / myVideo.duration);
+      previousStamp = findVideoStamp();
+      if (seekedByTab) {
+        seekedByTab = false;
+        return;
+      }
+      api.playbackRange = null;
+      api.playbackSpeed = 1;
+      var i = previousStamp;
+
+      api.tickPosition = i > 0 ? api.score.masterBars[i - 1].start : 0;
+      var percent = 0;
+      var temp = compasses.length;
+      if(i < temp){
+        percent = i > 0 ? (myVideo.currentTime * 1000 - compasses[i - 1]) / (compasses[i] - compasses[i - 1]) : 0;
+      }
+      else{
+        if(temp > 0){
+          var acm = compasses[temp - 1];
+          for(var j = temp; j < i; j++)
+            acm += expectedDuration[j];
+          percent = i > 0 ? (myVideo.currentTime * 1000 - acm) / (expectedDuration[i]) : 0;
+          console.log(percent);
+        }
+        else{
+          percent = i > 0 ? (myVideo.currentTime * 1000 - expectedStamps[i - 1]) / expectedDuration[i] : 0;
+          console.log(percent);
+        }
+      }
+      api.tickPosition += i > 0 ? percent * (api.score.masterBars[i].start - api.score.masterBars[i - 1].start) : 0;
+      //rememberTime = api.tickPosition;
+      seekedByVid = true;
+    });
+
+    function findPlaybackSpeed() {
+      var i = findVideoStamp();
+      if (i < compasses.length && i > 0) {
+        return (expectedDuration[i - 1] / (compasses[i] - compasses[i - 1])) * myVideo.playbackRate;
+      }
+      else {
+        return myVideo.playbackRate;
+      }
+    }
+
+    function findVideoStamp() {
+      var time = 0;
+      for (var i = 0; i < compasses.length; i++) {
+        if (compasses[i] > myVideo.currentTime * 1000)
+          return i;
+      }
+      if(compasses.length > 0)
+        time = compasses[compasses.length - 1];
+      for (var i = compasses.length; i < expectedStamps.length; i++) {
+        time += expectedDuration[i];
+        if (time > myVideo.currentTime * 1000){
+          return compasses.length > 0 ? i : i + 1;
+        }
+      }
+      return -1;
+    }
+
+    // load elements
+    const wrapper = document.querySelector(".at-wrap");
+    const main = wrapper.querySelector(".at-main");
+
+    // initialize alphatab
+    var settings = {
+      file: "deep-purple-highway_star.gp4",
+      player: {
+        enablePlayer: true,
+        soundFont: "https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2",
+        scrollElement: wrapper.querySelector('.at-viewport')
+      },
+    };
+    var api = new alphaTab.AlphaTabApi(main, settings);
+
+    //var nextBeatWillChangeTheMasterBar = false;
+
+    api.playedBeatChanged.on((args) => {/*
+        if(nextBeatWillChangeTheMasterBar && compasses.length > api._currentBeat.currentBeatLookup.masterBar.masterBar.index){
+          //api.timePosition += calculateMissedTime() / api.playbackSpeed;
+        }
+        else if(nextBeatWillChangeTheMasterBar)
+          //api.timePosition += calculateMissedTime() / api.playbackSpeed;
+        if(api._currentBeat.currentBeatLookup.masterBar.masterBar.index !== api._currentBeat.nextBeatLookup.masterBar.masterBar.index){
+          nextBeatWillChangeTheMasterBar = true;
+        }
+        else{
+          nextBeatWillChangeTheMasterBar = false;
+        }*/
+      api.playbackSpeed = findPlaybackSpeed();
+    });
+
+    /*function calculateMissedTime() {
+      var i = api._currentBeat.nextBeatLookup.masterBar.masterBar.index;
+      if (i < compasses.length)
+        return myVideo.currentTime * 1000 - compasses[i];
+      return myVideo.currentTime * 1000 - expectedStamps[i];
+    }*/
+
+    // overlay logic
+    const overlay = wrapper.querySelector(".at-overlay");
+    api.renderStarted.on(() => {
+      overlay.style.display = "flex";
+    });
+    api.renderFinished.on(() => {
+      overlay.style.display = "none";
+    });
+
+    api.postRenderFinished.on(() => {
+      api.changeTrackVolume(api.score.tracks, 0);
+      if (typeof stm !== undefined) {
+        expectedDuration = new Array(api.tracks[0].staves[0].bars.length);
+        expectedStamps = new Array(api.tracks[0].staves[0].bars.length + 1);
+        tickStamps = new Array(api.tickCache.masterBars.length);
+        tickDuration = new Array(api.tickCache.masterBars.length);
+        for (var i = 0; i < api.tickCache.masterBars.length; i++) {
+          tickStamps[i] = api.tickCache.masterBars[i].start;
+          tickDuration[i] = api.tickCache.masterBars[i].end - api.tickCache.masterBars[i].start;
+        }
+        for (var i = 0; i < expectedDuration.length; i++) {
+          expectedDuration[i] = 0;
+        }
+        for (var i = 0; i < expectedStamps.length; i++) {
+          expectedStamps[i] = 0;
+        }
+        var seekingBeat = api.tickCache.findBeat(api.tracks, 0);
+        while (seekingBeat != null) {
+          var currentIndex = seekingBeat.currentBeatLookup.masterBar.masterBar.index;
+          expectedDuration[currentIndex] += seekingBeat.duration;
+          seekingBeat = api.tickCache.findBeat(api.tracks, seekingBeat.currentBeatLookup.end);
+        }
+        for (var i = 0; i < expectedDuration.length; i++) {
+          expectedStamps[i + 1] = expectedDuration[i];
+          expectedStamps[i + 1] += expectedStamps[i];
+        }
+      }
+      previousStamp = findVideoStamp();
+    });
+
+    var ogZoom;
+    var zoomFactor = 0;
+
+    function zoomIn() {
+      ogZoom = 720 / waveSurfer.getDuration();
+      if (zoomFactor == 0)
+        zoomFactor = ogZoom;
+      if (zoomFactor >= 1024)
+        return;
+      zoomFactor *= 2;
+      waveSurfer.zoom(zoomFactor);
+    }
+
+    function zoomOut() {
+      ogZoom = 720 / waveSurfer.getDuration();
+      if (zoomFactor == 0)
+        zoomFactor = ogZoom;
+      if (zoomFactor <= ogZoom)
+        return;
+      zoomFactor /= 2;
+      waveSurfer.zoom(zoomFactor);
+    }
+
+    var expectedDuration;
+    var expectedStamps;
+    var tickStamps;
+
+    //let myVideoJS = videojs('theVideo');
+
+    updateArray();
+
+    function updateCompasses() {
+      for (var i = 0; i < wsRegions.getRegions().length; i++)
+        compasses[i] = parseInt(wsRegions.getRegions()[i].start * 1000);
+    };
+
+    function updateAll() {
+      updateRegions();
+      updateCompasses();
+      updateArray();
+    }
+
+    function updateArray() {
+      let list = document.getElementById("myList");
+      while (list.hasChildNodes())
+        list.removeChild(list.children[0]);
+      for (var i = 0; i < compasses.length; ++i) {
+        let li = document.createElement('li');
+        li.innerText = compasses[i];
+        list.appendChild(li);
+      }
+    };
+
+    var seekedByTab = false;
+    var seekedByVid = false;
+
+    api.playbackRangeChanged.on((e) => {
+      shouldLoop = api.playbackRange !== null;
+      if (seekedByVid) {
+        seekedByVid = false;
+      }
+      else {
+        setVideoTimeToMatchTab();
+      }
+    });
+
+    wsRegions.on('region-double-clicked', (e) => {
+      document.getElementById("indexCmp").value = findIndex(e) + 1;
+      deleteTime();
+    });
+
+    waveSurfer.on('interaction', (e) => {
+      myVideo.currentTime = e;
+    });
+
+    function setVideoTimeToMatchTab() {
+      seekedByTab = true;
+      var i = api.tickCache.findMasterBar(api.tickPosition).masterBar.index;
+      var percent = (api.tickPosition - tickStamps[i]) / tickDuration[i];
+      var temp = compasses.length;
+      if (i + 1 < temp) {
+        myVideo.currentTime = compasses[i] / 1000;
+        myVideo.currentTime += percent * (compasses[i + 1] - compasses[i]) / 1000;
+      }
+      else if (i + 1 == temp) {
+        myVideo.currentTime = compasses[i] / 1000;
+        myVideo.currentTime += percent * expectedDuration[i] / 1000;
+      }
+      else if (temp > 0){
+        var j = temp;
+        var acm = compasses[temp - 1];
+        while(j <= i){
+          acm += expectedDuration[j];
+          j++;
+        }
+        myVideo.currentTime = acm / 1000;
+        myVideo.currentTime += percent * expectedDuration[i] / 1000;
+      }
+      else{
+        myVideo.currentTime = expectedStamps[i] / 1000;
+        myVideo.currentTime += percent * expectedDuration[i] / 1000;
+      }
+      previousStamp = i;
+      //rememberTime = api.tickPosition;
+    }
+
+    api.playerStateChanged.on((e) => {
+      if (e.state == 0 && e.stopped) {
+        setVideoTimeToMatchTab();
+        if (!shouldLoop) {
+          myVideo.pause();
+          return;
+        }
+        api.tickPosition = api.playbackRange.startTick;
+        api.play();
+      }
+    });
+
+
+  </script>
+</body>
+
+</html>
