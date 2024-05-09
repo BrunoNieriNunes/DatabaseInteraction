@@ -791,7 +791,7 @@
         previousStamp = findVideoStamp();
         while(compasses.length > expectedStamps.length)
           compasses.pop();
-        endCompass = (compasses.length >= expectedStamps.length ? compasses[compasses.length - 1] : expectedStamps[expectedStamps.length - 1]) + expectedDuration[expectedDuration.length - 1];
+        endCompass = compasses[compasses.length - 1] + expectedDuration[expectedDuration.length - 1];
       });
 
       var ogZoom;
