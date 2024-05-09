@@ -587,6 +587,7 @@
     //var rememberTime = 0;
 
     myVideo.addEventListener("play", () => {
+      wasPlaying = true;
       //api.tickPosition = rememberTime;
       api.playbackSpeed = findPlaybackSpeed();
       waveSurfer.play();
@@ -623,7 +624,7 @@
     myVideo.addEventListener("seeked", () => {
       waveSurfer.seekTo(myVideo.currentTime / myVideo.duration);
       previousStamp = findVideoStamp();
-      if (seekedByTab) {
+      if (seekedByTab && wasPlaying) {
         if(shouldLoop){
           myVideo.play();
           api.play();
@@ -818,9 +819,11 @@
 
     var seekedByTab = false;
     var seekedByVid = false;
+    var wasPlaying = false;
 
     api.playbackRangeChanged.on((e) => {
       shouldLoop = api.playbackRange !== null;
+      wasPlaying = !myVideo.paused;
       myVideo.pause();
       api.pause();
       if (seekedByVid) {
