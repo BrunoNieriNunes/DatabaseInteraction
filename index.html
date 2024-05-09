@@ -604,7 +604,7 @@
           else if (previousStamp !== val && api.playbackRange === null && !shouldLoop) {
             api.tickPosition = tickStamps[previousStamp];
           }
-          if (!pauseStamps.includes(val) && val > 0 && val <= expectedDuration.length) {
+          if (!pauseStamps.includes(val) && val > 0 && val <= expectedDuration.length && api.tickCache.findBeat(api.tracks, api.tickPosition).nextBeatLookup !== null) {
             api.play();
           }
           else {
