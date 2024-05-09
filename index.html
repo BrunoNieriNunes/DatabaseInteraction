@@ -17,23 +17,23 @@
       font-size: 12px;
     }
 
-    .container{
+    .container {
       display: flow-root;
     }
 
-    .left-wrap{
+    .left-wrap {
       width: 50%;
       height: auto;
       float: left;
     }
 
-    .right-wrap{
+    .right-wrap {
       width: 50%;
       height: auto;
       float: right;
       overflow: auto;
     }
-    
+
     .at-wrap {
       width: 50vw;
       height: 80vh;
@@ -45,15 +45,7 @@
       position: relative;
     }
 
-    .video-wrap{
-      width: 100%;
-      height: auto;
-      overflow: auto;
-      float: left;
-      clear: left;
-    }
-  
-    .audio-wrap{
+    .video-wrap {
       width: 100%;
       height: auto;
       overflow: auto;
@@ -61,7 +53,7 @@
       clear: left;
     }
 
-    .button-wrap{
+    .audio-wrap {
       width: 100%;
       height: auto;
       overflow: auto;
@@ -69,20 +61,28 @@
       clear: left;
     }
 
-    .file-wrap{
+    .button-wrap {
       width: 100%;
       height: auto;
       overflow: auto;
       float: left;
       clear: left;
     }
-    
+
+    .file-wrap {
+      width: 100%;
+      height: auto;
+      overflow: auto;
+      float: left;
+      clear: left;
+    }
+
     .at-content {
       position: relative;
       overflow: hidden;
       flex: 1 1 auto;
     }
-    
+
     /** Sidebar **/
     .at-sidebar {
       position: absolute;
@@ -295,8 +295,6 @@
       fill: #0078ff;
       stroke: #0078ff;
     }
-
-
   </style>
 </head>
 
@@ -351,358 +349,383 @@
           <div class="at-viewport">
             <div class="at-main"></div>
           </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script type="text/javascript">
-    const sb = supabase.createClient('https://kmvkcftembtxisodsfih.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttdmtjZnRlbWJ0eGlzb2RzZmloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ4ODAzMTEsImV4cCI6MjAzMDQ1NjMxMX0.FIezOyJzdZh57tbsLtujH8rTzW9vb2efOmGvmgz45G8');
+    <script type="text/javascript">
+      const sb = supabase.createClient('https://kmvkcftembtxisodsfih.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttdmtjZnRlbWJ0eGlzb2RzZmloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQ4ODAzMTEsImV4cCI6MjAzMDQ1NjMxMX0.FIezOyJzdZh57tbsLtujH8rTzW9vb2efOmGvmgz45G8');
 
-    document.getElementById("inputV").addEventListener("change", (e) => {
-      if(e.target.files.length === 0)
-        return;
-      fileName = e.target.files[0];
-      vidLoad(e);
-    });
-
-    document.getElementById("inputT").addEventListener("change", (e) => {
-      APILoad(e);
-    });
-
-
-    function vidLoad(e){
-      vidFile = e.target.files[0];
-      wsRegions.clearRegions();
-      while (compasses.length > 0)
-        compasses.pop();
-      var list = document.getElementById("myList");
-      while (list.hasChildNodes())
-        list.removeChild(list.children[0]);
-      var media = URL.createObjectURL(vidFile);
-      var video = document.getElementById("theVideo");
-      video.src = media;
-      video.style.display = "block";
-      waveSurfer.load(media);
-    }
-
-    function APILoad(e){
-      myVideo.pause();
-      tabFile = e.target.files[0];
-      const data = URL.createObjectURL(tabFile);
-      settings.file = data;
-      api.load(data);
-    }
-
-    var tabFile;
-    var vidFile;
-    var querystring = window.location.search;
-    var params = new URLSearchParams(querystring);
-
-    document.addEventListener('keypress', (e) => {
-      if (e.keyCode == 116) {
-        addTime();
-      }
-    });
-
-    document.addEventListener('keypress', (e) => {
-      if (e.keyCode == 32) {
-        myVideo.paused ? myVideo.play() : myVideo.pause();
-      }
-    });
-
-    async function signUp() {
-      const { data, error } = await sb.auth.signUp({
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value
+      document.getElementById("inputV").addEventListener("change", (e) => {
+        if (e.target.files.length === 0)
+          return;
+        fileName = e.target.files[0];
+        vidLoad(e);
       });
-    }
 
-    var fileName;
-
-    async function insert(){
-      if(myVideo.src !== '' && api.score !== null){
-        const data = await sb.from("tabs").insert({
-          vidName: vidFile.name,
-          tabName: tabFile.name,
-          compasses: compasses,
-          pauseStamps: pauseStamps
-        }).select();
-
-        const res1 = await sb.storage.from('tabs').upload(tabFile.name, tabFile);
-        const res2 = await sb.storage.from('videos').upload(vidFile.name, vidFile);
-
-        alert('Link pra embedar: embed-this-mf.vercel.app/?id=' + data.data[0].id);
-
-      }
-      else{
-        alert('Vídeo e/ou tablatura não carregados');
-      }
-    }
-
-    async function showAll(){
-      const res = await sb.from("tabs").select('*');
-    }
-
-    async function importTab(){
-      const res = await sb.from("tabs").select('*');
-      const data = res.data[document.getElementById('arrayId').value];
-      vidLoad(data);
-      APILoad(data);
-    }
-
-    function updateRegions() {
-      wsRegions.getRegions().sort(sortFunction);
-      for (var i = 0; i < wsRegions.getRegions().length; i++) {
-        wsRegions.getRegions()[i].setOptions({ content: "" + (findIndex(wsRegions.getRegions()[i]) + 1) });
-      }
-    };
-
-    function sortFunction(a, b) {
-      if (a.start < b.start)
-        return -1;
-      else if (a.start > b.start)
-        return 1;
-      return 0;
-    }
-
-    function addTime() {
-      compasses.push(parseInt(myVideo.currentTime * 1000));
-      compasses.sort();
-      wsRegions.addRegion({
-        start: myVideo.currentTime,
-        color: 'red',
-        content: "" + compasses.length
+      document.getElementById("inputT").addEventListener("change", (e) => {
+        APILoad(e);
       });
-      updateAll();
-    };
 
-    function editTime() {
-      var list = document.getElementById("myList");
-      var index = document.getElementById("indexCmp").value;
-      var newTime = document.getElementById("timeCmp").value;
-      if (index <= list.children.length) {
-        wsRegions.getRegions()[index - 1].setOptions({ start: newTime / 1000 });
-        compasses[index - 1] = newTime;
-        updateAll();
+
+      function vidLoad(e) {
+        vidFile = e.target.files[0];
+        wsRegions.clearRegions();
+        while (compasses.length > 0)
+          compasses.pop();
+        var list = document.getElementById("myList");
+        while (list.hasChildNodes())
+          list.removeChild(list.children[0]);
+        var media = URL.createObjectURL(vidFile);
+        var video = document.getElementById("theVideo");
+        video.src = media;
+        video.style.display = "block";
+        waveSurfer.load(media);
       }
-    };
 
-    function deleteTime() {
-      var list = document.getElementById("myList");
-      var index = document.getElementById("indexCmp").value;
-      var newTime = document.getElementById("timeCmp").value;
-      if (index <= list.children.length) {
-        wsRegions.getRegions()[index - 1].remove();
-        compasses.splice(index - 1, 1);
-        updateAll();
+      function APILoad(e) {
+        myVideo.pause();
+        tabFile = e.target.files[0];
+        const data = URL.createObjectURL(tabFile);
+        settings.file = data;
+        api.load(data);
       }
-    };
 
-    function insertTime() {
-      var list = document.getElementById("myList");
-      var index = document.getElementById("indexCmp").value;
-      var newTime = document.getElementById("timeCmp").value;
-      if (index <= list.children.length) {
-        wsRegions.addRegion({
-          start: newTime / 1000,
-          color: 'red',
-          content: "" + index
+      var tabFile;
+      var vidFile;
+      var querystring = window.location.search;
+      var params = new URLSearchParams(querystring);
+
+      document.addEventListener('keypress', (e) => {
+        if (e.keyCode == 116) {
+          addTime();
+        }
+      });
+
+      document.addEventListener('keypress', (e) => {
+        if (e.keyCode == 32) {
+          myVideo.paused ? myVideo.play() : myVideo.pause();
+        }
+      });
+
+      async function signUp() {
+        const { data, error } = await sb.auth.signUp({
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
         });
-        for (var i = wsRegions.getRegions().length - 1; i >= index; i--) {
-          [wsRegions.getRegions()[i], wsRegions.getRegions()[i - 1]] = [wsRegions.getRegions()[i - 1], wsRegions.getRegions()[i]];
+      }
+
+      var fileName;
+
+      async function insert() {
+        if (myVideo.src !== '' && api.score !== null) {
+          const data = await sb.from("tabs").insert({
+            vidName: vidFile.name,
+            tabName: tabFile.name,
+            compasses: compasses,
+            pauseStamps: pauseStamps
+          }).select();
+
+          const res1 = await sb.storage.from('tabs').upload(tabFile.name, tabFile);
+          const res2 = await sb.storage.from('videos').upload(vidFile.name, vidFile);
+
+          alert('Link pra embedar: embed-this-mf.vercel.app/?id=' + data.data[0].id);
+
         }
-        compasses.splice(index - 1, 0, newTime);
+        else {
+          alert('Vídeo e/ou tablatura não carregados');
+        }
+      }
+
+      async function showAll() {
+        const res = await sb.from("tabs").select('*');
+      }
+
+      async function importTab() {
+        const res = await sb.from("tabs").select('*');
+        const data = res.data[document.getElementById('arrayId').value];
+        vidLoad(data);
+        APILoad(data);
+      }
+
+      function updateRegions() {
+        wsRegions.getRegions().sort(sortFunction);
+        for (var i = 0; i < wsRegions.getRegions().length; i++) {
+          wsRegions.getRegions()[i].setOptions({ content: "" + (findIndex(wsRegions.getRegions()[i]) + 1) });
+        }
+      };
+
+      function sortFunction(a, b) {
+        if (a.start < b.start)
+          return -1;
+        else if (a.start > b.start)
+          return 1;
+        return 0;
+      }
+
+      function addTime() {
+        compasses.push(parseInt(myVideo.currentTime * 1000));
+        compasses.sort();
+        wsRegions.addRegion({
+          start: myVideo.currentTime,
+          color: 'red',
+          content: "" + compasses.length
+        });
         updateAll();
-      }
-    }
+      };
 
-    function togglePause(){
-      var hl = document.getElementById("highlights");
-      var index = parseInt(document.getElementById("indexCmp").value);
-      if(index > expectedStamps.lenght)
-        return;
-      if(!pauseStamps.includes(index)){
-        pauseStamps.push(index);
-      }
-      else{
-        pauseStamps.splice(pauseStamps.indexOf(index), 1);
-      }
-      while (hl.hasChildNodes())
-        hl.removeChild(hl.children[0]);
-      for (var i = 0; i < pauseStamps.length; ++i) {
-        let li = document.createElement('li');
-        li.innerText = pauseStamps[i];
-        hl.appendChild(li);
-      }
-    }
+      function editTime() {
+        var list = document.getElementById("myList");
+        var index = document.getElementById("indexCmp").value;
+        var newTime = document.getElementById("timeCmp").value;
+        if (index <= list.children.length) {
+          wsRegions.getRegions()[index - 1].setOptions({ start: newTime / 1000 });
+          compasses[index - 1] = newTime;
+          updateAll();
+        }
+      };
 
-    /*
-    while (list.hasChildNodes())
-        list.removeChild(list.children[0]);
-      for (var i = 0; i < compasses.length; ++i) {
-        let li = document.createElement('li');
-        li.innerText = compasses[i];
-        list.appendChild(li);
-    */
+      function deleteTime() {
+        var list = document.getElementById("myList");
+        var index = document.getElementById("indexCmp").value;
+        var newTime = document.getElementById("timeCmp").value;
+        if (index <= list.children.length) {
+          wsRegions.getRegions()[index - 1].remove();
+          compasses.splice(index - 1, 1);
+          updateAll();
+        }
+      };
 
-    function findIndex(e) {
-      for (var i = 0; i < wsRegions.getRegions().length; i++) {
-        if (wsRegions.getRegions()[i].id === e.id) {
-          return i;
+      function insertTime() {
+        var list = document.getElementById("myList");
+        var index = document.getElementById("indexCmp").value;
+        var newTime = document.getElementById("timeCmp").value;
+        if (index <= list.children.length) {
+          wsRegions.addRegion({
+            start: newTime / 1000,
+            color: 'red',
+            content: "" + index
+          });
+          for (var i = wsRegions.getRegions().length - 1; i >= index; i--) {
+            [wsRegions.getRegions()[i], wsRegions.getRegions()[i - 1]] = [wsRegions.getRegions()[i - 1], wsRegions.getRegions()[i]];
+          }
+          compasses.splice(index - 1, 0, newTime);
+          updateAll();
         }
       }
-    };
 
-    var waveSurfer = WaveSurfer.create({
-      container: "#audiowave",
-      waveColor: "#5df9de",
-      height: 240,
-      cursorColor: "blue",
-      width: '100%',
-      plugins: [
-        WaveSurfer.Hover.create({
-          lineColor: "green",
-          lineWidth: 2,
-          labelBackground: '#555',
-          labelColor: '#fff',
-          labelSize: '11px',
-        }),
-      ]
-    });
-
-    waveSurfer.setMuted(true);
-    const wsRegions = waveSurfer.registerPlugin(WaveSurfer.Regions.create());
-    wsRegions.on("region-updated", (e) => {
-      compasses[findIndex(e)] = e.start * 1000;
-      wsRegions.getRegions().sort(sortFunction);
-      updateAll();
-    });
-
-    let myVideo = document.getElementById("theVideo");
-
-    var theInterval;
-    var pauseStamps = new Array();
-    var compasses = new Array();
-    var videoToTab = new Array(compasses.length);
-    //var rememberTime = 0;
-
-    myVideo.addEventListener("play", () => {
-      wasPlaying = true;
-      //api.tickPosition = rememberTime;
-      api.playbackSpeed = findPlaybackSpeed();
-      waveSurfer.play();
-      theInterval = setInterval(() => {
-        let val = findVideoStamp();
-        if(previousStamp !== val && api.playbackRange === null && !shouldLoop){
-          api.tickPosition = tickStamps[previousStamp];
-          val = findVideoStamp();
+      function togglePause() {
+        var hl = document.getElementById("highlights");
+        var index = parseInt(document.getElementById("indexCmp").value);
+        if (index > expectedStamps.lenght)
+          return;
+        if (!pauseStamps.includes(index)) {
+          pauseStamps.push(index);
         }
-        if (!pauseStamps.includes(val) && val !== 0){
-          api.play();
+        else {
+          pauseStamps.splice(pauseStamps.indexOf(index), 1);
         }
-        else{
-          api.pause();
-        }
-        previousStamp = val;
-      }, 100);
-    });
-
-    var previousStamp = 0;
-    var wasPaused = false;
-
-    myVideo.addEventListener("pause", () => {
-      previousStamp = findVideoStamp();
-      clearInterval(theInterval);
-      //rememberTime = api.tickPosition;
-      api.pause();
-      //api.tickPosition = rememberTime;
-      waveSurfer.pause();
-    });
-
-    var shouldLoop = false;
-
-    myVideo.addEventListener("seeked", () => {
-      waveSurfer.seekTo(myVideo.currentTime / myVideo.duration);
-      previousStamp = findVideoStamp();
-      if (seekedByTab && wasPlaying) {
-        if(shouldLoop){
-          myVideo.play();
-          api.play();
-        }
-        seekedByTab = false;
-        return;
-      }
-      api.playbackRange = null;
-      api.playbackSpeed = 1;
-      var i = previousStamp;
-
-      api.tickPosition = i > 0 ? api.score.masterBars[i - 1].start : 0;
-      var percent = 0;
-      var temp = compasses.length;
-      if(i < temp){
-        percent = i > 0 ? (myVideo.currentTime * 1000 - compasses[i - 1]) / (compasses[i] - compasses[i - 1]) : 0;
-      }
-      else{
-        if(temp > 0){
-          var acm = compasses[temp - 1];
-          for(var j = temp; j < i; j++)
-            acm += expectedDuration[j];
-          percent = i > 0 ? (myVideo.currentTime * 1000 - acm) / (expectedDuration[i]) : 0;
-        }
-        else{
-          percent = i > 0 ? (myVideo.currentTime * 1000 - expectedStamps[i - 1]) / expectedDuration[i] : 0;
+        while (hl.hasChildNodes())
+          hl.removeChild(hl.children[0]);
+        for (var i = 0; i < pauseStamps.length; ++i) {
+          let li = document.createElement('li');
+          li.innerText = pauseStamps[i];
+          hl.appendChild(li);
         }
       }
-      api.tickPosition += i > 0 ? percent * (api.score.masterBars[i].start - api.score.masterBars[i - 1].start) : 0;
-      //rememberTime = api.tickPosition;
-      seekedByVid = true;
-    });
 
-    function findPlaybackSpeed() {
-      var i = findVideoStamp();
-      if (i < compasses.length && i > 0) {
-        return (expectedDuration[i - 1] / (compasses[i] - compasses[i - 1])) * myVideo.playbackRate;
-      }
-      else {
-        return myVideo.playbackRate;
-      }
-    }
+      /*
+      while (list.hasChildNodes())
+          list.removeChild(list.children[0]);
+        for (var i = 0; i < compasses.length; ++i) {
+          let li = document.createElement('li');
+          li.innerText = compasses[i];
+          list.appendChild(li);
+      */
 
-    function findVideoStamp() {
-      var time = 0;
-      for (var i = 0; i < compasses.length; i++) {
-        if (compasses[i] > myVideo.currentTime * 1000)
-          return i;
-      }
-      if(compasses.length > 0)
-        time = compasses[compasses.length - 1];
-      for (var i = compasses.length; i < expectedStamps.length; i++) {
-        time += expectedDuration[i];
-        if (time > myVideo.currentTime * 1000){
-          return compasses.length > 0 ? i : i + 1;
+      function findIndex(e) {
+        for (var i = 0; i < wsRegions.getRegions().length; i++) {
+          if (wsRegions.getRegions()[i].id === e.id) {
+            return i;
+          }
+        }
+      };
+
+      var waveSurfer = WaveSurfer.create({
+        container: "#audiowave",
+        waveColor: "#5df9de",
+        height: 240,
+        cursorColor: "blue",
+        width: '100%',
+        plugins: [
+          WaveSurfer.Hover.create({
+            lineColor: "green",
+            lineWidth: 2,
+            labelBackground: '#555',
+            labelColor: '#fff',
+            labelSize: '11px',
+          }),
+        ]
+      });
+
+      waveSurfer.setMuted(true);
+      const wsRegions = waveSurfer.registerPlugin(WaveSurfer.Regions.create());
+      wsRegions.on("region-updated", (e) => {
+        compasses[findIndex(e)] = e.start * 1000;
+        wsRegions.getRegions().sort(sortFunction);
+        updateAll();
+      });
+
+      let myVideo = document.getElementById("theVideo");
+
+      var theInterval;
+      var pauseStamps = new Array();
+      var compasses = new Array();
+      var videoToTab = new Array(compasses.length);
+      //var rememberTime = 0;
+
+      myVideo.addEventListener("play", () => {
+        if (myVideo.readyState < 4) {
+          myVideo.pause();
+          return;
+        }
+        wasPlaying = true;
+        waveSurfer.play();
+        api.playbackSpeed = findPlaybackSpeed();
+        theInterval = setInterval(() => {
+          let val = findVideoStamp();
+          if (val === expectedDuration.length + 1) {
+            api.tickPosition = tickStamps[tickStamps.length - 1] + tickDuration[tickDuration.length - 1] - 1;
+          }
+          else if (previousStamp !== val && api.playbackRange === null && !shouldLoop) {
+            api.tickPosition = tickStamps[previousStamp];
+          }
+          if (!pauseStamps.includes(val) && val > 0 && val <= expectedDuration.length) {
+            api.play();
+          }
+          else {
+            api.pause();
+          }
+          previousStamp = val;
+        }, 100);
+      });
+
+      var previousStamp = 0;
+      var wasPaused = false;
+
+      myVideo.addEventListener("pause", () => {
+        previousStamp = findVideoStamp();
+        clearInterval(theInterval);
+        //rememberTime = api.tickPosition;
+        api.pause();
+        //api.tickPosition = rememberTime;
+        waveSurfer.pause();
+      });
+
+      var shouldLoop = false;
+
+      myVideo.addEventListener("seeked", () => {
+        waveSurfer.seekTo(myVideo.currentTime / myVideo.duration);
+        previousStamp = findVideoStamp();
+        if (wasPlaying && !shouldLoop) {
+          myVideo.pause();
+          myVideo.currentTime = myVideo.currentTime;
+          wasPlaying = false;
+        }
+        if (seekedByTab) {
+          if (shouldLoop && wasPlaying) {
+            myVideo.play();
+            api.play();
+          }
+          seekedByTab = false;
+          return;
+        }
+        api.playbackSpeed = 1;
+        var i = previousStamp;
+
+        if (i === expectedDuration.length + 1) {
+          api.tickPosition = tickStamps[tickStamps.length - 1] + tickDuration[tickDuration.length - 1] - 1;
+        }
+        else {
+          api.tickPosition = i > 0 ? api.score.masterBars[i - 1].start : 0;
+          var percent = 0;
+          var temp = compasses.length;
+          if (i < temp) {
+            percent = i > 0 ? (myVideo.currentTime * 1000 - compasses[i - 1]) / (compasses[i] - compasses[i - 1]) : 0;
+          }
+          else {
+            if (temp === i && temp > 0) {
+              var acm = compasses[temp - 1];
+              for (var j = temp; j < i; j++)
+                acm += expectedDuration[j];
+              if (temp < i) {
+                percent = i > 0 ? (myVideo.currentTime * 1000 - acm) / (expectedDuration[i]) : 0;
+              }
+              else {
+                percent = (myVideo.currentTime * 1000 - acm) / (endCompass - (compasses.length >= expectedStamps.length ? compasses[i] : expectedStamps[i]));
+              }
+            }
+            else {
+              percent = (myVideo.currentTime * 1000 - expectedStamps[i - 1]) / expectedDuration[i];
+            }
+          }
+          api.tickPosition += i > 0 ? percent * tickDuration[i - 1] : 0;
+        }
+        if(api.playbackRange !== null && (api.tickPosition < api.playbackRange.startTick || api.tickPosition > api.playbackRange.endTick)){
+          api.playbackRange = null;
+        }
+        seekedByVid = true;
+      });
+
+      function findPlaybackSpeed() {
+        var i = findVideoStamp();
+        if (i < compasses.length && i > 0) {
+          return (expectedDuration[i - 1] / (compasses[i] - compasses[i - 1])) * myVideo.playbackRate;
+        }
+        else {
+          return myVideo.playbackRate;
         }
       }
-      return -1;
-    }
 
-    // load elements
-    const wrapper = document.querySelector(".at-wrap");
-    const main = wrapper.querySelector(".at-main");
+      var endCompass;
 
-    // initialize alphatab
-    var settings = {
-      file: "deep-purple-highway_star.gp4",
-      player: {
-        enablePlayer: true,
-        soundFont: "https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2",
-        scrollElement: wrapper.querySelector('.at-viewport')
-      },
-    };
-    var api = new alphaTab.AlphaTabApi(main, settings);
+      function findVideoStamp() {
+        if (endCompass <= myVideo.currentTime * 1000)
+          return expectedDuration.length + 1;
+        var time = 0;
+        for (var i = 0; i < compasses.length; i++) {
+          if (compasses[i] > myVideo.currentTime * 1000)
+            return i;
+        }
+        if (compasses.length > 0)
+          time = compasses[compasses.length - 1];
+        for (var i = compasses.length; i < expectedStamps.length; i++) {
+          time += expectedDuration[i];
+          if (time > myVideo.currentTime * 1000) {
+            return compasses.length > 0 ? i : i + 1;
+          }
+        }
+        return expectedDuration.length;
+      }
 
-    //var nextBeatWillChangeTheMasterBar = false;
+      // load elements
+      const wrapper = document.querySelector(".at-wrap");
+      const main = wrapper.querySelector(".at-main");
 
-    api.playedBeatChanged.on((args) => {/*
+      // initialize alphatab
+      var settings = {
+        file: "deep-purple-highway_star.gp4",
+        player: {
+          enablePlayer: true,
+          soundFont: "https://cdn.jsdelivr.net/npm/@coderline/alphatab@latest/dist/soundfont/sonivox.sf2",
+          scrollElement: wrapper.querySelector('.at-viewport')
+        },
+      };
+      var api = new alphaTab.AlphaTabApi(main, settings);
+
+      //var nextBeatWillChangeTheMasterBar = false;
+
+      api.playedBeatChanged.on((args) => {/*
         if(nextBeatWillChangeTheMasterBar && compasses.length > api._currentBeat.currentBeatLookup.masterBar.masterBar.index){
           //api.timePosition += calculateMissedTime() / api.playbackSpeed;
         }
@@ -714,179 +737,179 @@
         else{
           nextBeatWillChangeTheMasterBar = false;
         }*/
-      api.playbackSpeed = findPlaybackSpeed();
-    });
+        api.playbackSpeed = findPlaybackSpeed();
+      });
 
-    /*function calculateMissedTime() {
-      var i = api._currentBeat.nextBeatLookup.masterBar.masterBar.index;
-      if (i < compasses.length)
-        return myVideo.currentTime * 1000 - compasses[i];
-      return myVideo.currentTime * 1000 - expectedStamps[i];
-    }*/
+      /*function calculateMissedTime() {
+        var i = api._currentBeat.nextBeatLookup.masterBar.masterBar.index;
+        if (i < compasses.length)
+          return myVideo.currentTime * 1000 - compasses[i];
+        return myVideo.currentTime * 1000 - expectedStamps[i];
+      }*/
 
-    // overlay logic
-    const overlay = wrapper.querySelector(".at-overlay");
-    api.renderStarted.on(() => {
-      overlay.style.display = "flex";
-    });
-    api.renderFinished.on(() => {
-      overlay.style.display = "none";
-    });
+      // overlay logic
+      const overlay = wrapper.querySelector(".at-overlay");
+      api.renderStarted.on(() => {
+        overlay.style.display = "flex";
+      });
+      api.renderFinished.on(() => {
+        overlay.style.display = "none";
+      });
 
-    api.postRenderFinished.on(() => {
-      api.changeTrackVolume(api.score.tracks, 0);
-      if (typeof stm !== undefined) {
-        expectedDuration = new Array(api.tracks[0].staves[0].bars.length);
-        expectedStamps = new Array(api.tracks[0].staves[0].bars.length + 1);
-        tickStamps = new Array(api.tickCache.masterBars.length);
-        tickDuration = new Array(api.tickCache.masterBars.length);
-        for (var i = 0; i < api.tickCache.masterBars.length; i++) {
-          tickStamps[i] = api.tickCache.masterBars[i].start;
-          tickDuration[i] = api.tickCache.masterBars[i].end - api.tickCache.masterBars[i].start;
+      api.postRenderFinished.on(() => {
+        api.changeTrackVolume(api.score.tracks, 0);
+        if (typeof stm !== undefined) {
+          expectedDuration = new Array(api.tracks[0].staves[0].bars.length);
+          expectedStamps = new Array(api.tracks[0].staves[0].bars.length + 1);
+          tickStamps = new Array(api.tickCache.masterBars.length);
+          tickDuration = new Array(api.tickCache.masterBars.length);
+          for (var i = 0; i < api.tickCache.masterBars.length; i++) {
+            tickStamps[i] = api.tickCache.masterBars[i].start;
+            tickDuration[i] = api.tickCache.masterBars[i].end - api.tickCache.masterBars[i].start;
+          }
+          for (var i = 0; i < expectedDuration.length; i++) {
+            expectedDuration[i] = 0;
+          }
+          for (var i = 0; i < expectedStamps.length; i++) {
+            expectedStamps[i] = 0;
+          }
+          var seekingBeat = api.tickCache.findBeat(api.tracks, 0);
+          while (seekingBeat != null) {
+            var currentIndex = seekingBeat.currentBeatLookup.masterBar.masterBar.index;
+            expectedDuration[currentIndex] += seekingBeat.duration;
+            seekingBeat = api.tickCache.findBeat(api.tracks, seekingBeat.currentBeatLookup.end);
+          }
+          for (var i = 0; i < expectedDuration.length; i++) {
+            expectedStamps[i + 1] = expectedDuration[i];
+            expectedStamps[i + 1] += expectedStamps[i];
+          }
         }
-        for (var i = 0; i < expectedDuration.length; i++) {
-          expectedDuration[i] = 0;
-        }
-        for (var i = 0; i < expectedStamps.length; i++) {
-          expectedStamps[i] = 0;
-        }
-        var seekingBeat = api.tickCache.findBeat(api.tracks, 0);
-        while (seekingBeat != null) {
-          var currentIndex = seekingBeat.currentBeatLookup.masterBar.masterBar.index;
-          expectedDuration[currentIndex] += seekingBeat.duration;
-          seekingBeat = api.tickCache.findBeat(api.tracks, seekingBeat.currentBeatLookup.end);
-        }
-        for (var i = 0; i < expectedDuration.length; i++) {
-          expectedStamps[i + 1] = expectedDuration[i];
-          expectedStamps[i + 1] += expectedStamps[i];
-        }
-      }
-      previousStamp = findVideoStamp();
-    });
+        previousStamp = findVideoStamp();
+        endCompass = (compasses.length >= expectedStamps.length ? compasses[compasses.length - 1] : expectedStamps[expectedStamps.length - 1]) + expectedDuration[expectedDuration.length - 1];
+      });
 
-    var ogZoom;
-    var zoomFactor = 0;
+      var ogZoom;
+      var zoomFactor = 0;
 
-    function zoomIn() {
-      ogZoom = 720 / waveSurfer.getDuration();
-      if (zoomFactor == 0)
-        zoomFactor = ogZoom;
-      if (zoomFactor >= 1024)
-        return;
-      zoomFactor *= 2;
-      waveSurfer.zoom(zoomFactor);
-    }
-
-    function zoomOut() {
-      ogZoom = 720 / waveSurfer.getDuration();
-      if (zoomFactor == 0)
-        zoomFactor = ogZoom;
-      if (zoomFactor <= ogZoom)
-        return;
-      zoomFactor /= 2;
-      waveSurfer.zoom(zoomFactor);
-    }
-
-    var expectedDuration;
-    var expectedStamps;
-    var tickStamps;
-
-    //let myVideoJS = videojs('theVideo');
-
-    updateArray();
-
-    function updateCompasses() {
-      for (var i = 0; i < wsRegions.getRegions().length; i++)
-        compasses[i] = parseInt(wsRegions.getRegions()[i].start * 1000);
-    };
-
-    function updateAll() {
-      updateRegions();
-      updateCompasses();
-      updateArray();
-    }
-
-    function updateArray() {
-      let list = document.getElementById("myList");
-      while (list.hasChildNodes())
-        list.removeChild(list.children[0]);
-      for (var i = 0; i < compasses.length; ++i) {
-        let li = document.createElement('li');
-        li.innerText = compasses[i];
-        list.appendChild(li);
-      }
-    };
-
-    var seekedByTab = false;
-    var seekedByVid = false;
-    var wasPlaying = false;
-
-    api.playbackRangeChanged.on((e) => {
-      shouldLoop = api.playbackRange !== null;
-      wasPlaying = !myVideo.paused;
-      myVideo.pause();
-      api.pause();
-      if (seekedByVid) {
-        seekedByVid = false;
-      }
-      else {
-        setVideoTimeToMatchTab();
-      }
-    });
-
-    wsRegions.on('region-double-clicked', (e) => {
-      document.getElementById("indexCmp").value = findIndex(e) + 1;
-      deleteTime();
-    });
-
-    waveSurfer.on('interaction', (e) => {
-      myVideo.currentTime = e;
-    });
-
-    function setVideoTimeToMatchTab() {
-      seekedByTab = true;
-      var i = api.tickCache.findMasterBar(api.tickPosition).masterBar.index;
-      var percent = (api.tickPosition - tickStamps[i]) / tickDuration[i];
-      var temp = compasses.length;
-      if (i + 1 < temp) {
-        myVideo.currentTime = compasses[i] / 1000;
-        myVideo.currentTime += percent * (compasses[i + 1] - compasses[i]) / 1000;
-      }
-      else if (i + 1 == temp) {
-        myVideo.currentTime = compasses[i] / 1000;
-        myVideo.currentTime += percent * expectedDuration[i] / 1000;
-      }
-      else if (temp > 0){
-        var j = temp;
-        var acm = compasses[temp - 1];
-        while(j <= i){
-          acm += expectedDuration[j];
-          j++;
-        }
-        myVideo.currentTime = acm / 1000;
-        myVideo.currentTime += percent * expectedDuration[i] / 1000;
-      }
-      else{
-        myVideo.currentTime = expectedStamps[i] / 1000;
-        myVideo.currentTime += percent * expectedDuration[i] / 1000;
-      }
-      previousStamp = i;
-      //rememberTime = api.tickPosition;
-    }
-
-    api.playerStateChanged.on((e) => {
-      if (e.state == 0 && e.stopped) {
-        myVideo.pause();
-        setVideoTimeToMatchTab();
-        if (!shouldLoop) {
+      function zoomIn() {
+        ogZoom = 720 / waveSurfer.getDuration();
+        if (zoomFactor == 0)
+          zoomFactor = ogZoom;
+        if (zoomFactor >= 1024)
           return;
-        }
-        api.tickPosition = api.playbackRange.startTick;
+        zoomFactor *= 2;
+        waveSurfer.zoom(zoomFactor);
       }
-    });
+
+      function zoomOut() {
+        ogZoom = 720 / waveSurfer.getDuration();
+        if (zoomFactor == 0)
+          zoomFactor = ogZoom;
+        if (zoomFactor <= ogZoom)
+          return;
+        zoomFactor /= 2;
+        waveSurfer.zoom(zoomFactor);
+      }
+
+      var expectedDuration;
+      var expectedStamps;
+      var tickStamps;
+
+      //let myVideoJS = videojs('theVideo');
+
+      updateArray();
+
+      function updateCompasses() {
+        for (var i = 0; i < wsRegions.getRegions().length; i++)
+          compasses[i] = parseInt(wsRegions.getRegions()[i].start * 1000);
+      };
+
+      function updateAll() {
+        updateRegions();
+        updateCompasses();
+        updateArray();
+      }
+
+      function updateArray() {
+        let list = document.getElementById("myList");
+        while (list.hasChildNodes())
+          list.removeChild(list.children[0]);
+        for (var i = 0; i < compasses.length; ++i) {
+          let li = document.createElement('li');
+          li.innerText = compasses[i];
+          list.appendChild(li);
+        }
+      };
+
+      var seekedByTab = false;
+      var seekedByVid = false;
+      var wasPlaying = false;
+
+      api.playbackRangeChanged.on((e) => {
+        shouldLoop = api.playbackRange !== null;
+        wasPlaying = !myVideo.paused;
+        myVideo.pause();
+        api.pause();
+        if (seekedByVid) {
+          seekedByVid = false;
+        }
+        else {
+          setVideoTimeToMatchTab();
+        }
+      });
+
+      wsRegions.on('region-double-clicked', (e) => {
+        document.getElementById("indexCmp").value = findIndex(e) + 1;
+        deleteTime();
+      });
+
+      waveSurfer.on('interaction', (e) => {
+        myVideo.currentTime = e;
+      });
+
+      function setVideoTimeToMatchTab() {
+        seekedByTab = true;
+        var i = api.tickCache.findMasterBar(api.tickPosition).masterBar.index;
+        var percent = (api.tickPosition - tickStamps[i]) / tickDuration[i];
+        var temp = compasses.length;
+        if (i + 1 < temp) {
+          myVideo.currentTime = compasses[i] / 1000;
+          myVideo.currentTime += percent * (compasses[i + 1] - compasses[i]) / 1000;
+        }
+        else if (i + 1 == temp) {
+          myVideo.currentTime = compasses[i] / 1000;
+          myVideo.currentTime += percent * expectedDuration[i] / 1000;
+        }
+        else if (temp > 0) {
+          var j = temp;
+          var acm = compasses[temp - 1];
+          while (j <= i) {
+            acm += expectedDuration[j];
+            j++;
+          }
+          myVideo.currentTime = acm / 1000;
+          myVideo.currentTime += percent * expectedDuration[i] / 1000;
+        }
+        else {
+          myVideo.currentTime = expectedStamps[i] / 1000;
+          myVideo.currentTime += percent * expectedDuration[i] / 1000;
+        }
+        previousStamp = i;
+      }
+
+      api.playerStateChanged.on((e) => {
+        if (e.state == 0 && e.stopped) {
+          myVideo.pause();
+          setVideoTimeToMatchTab();
+          if (!shouldLoop) {
+            return;
+          }
+          api.tickPosition = api.playbackRange.startTick;
+        }
+      });
 
 
-  </script>
+    </script>
 </body>
 
 </html>
