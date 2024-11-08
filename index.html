@@ -368,7 +368,7 @@
       });
 
 
-      function vidLoad(e) {
+      async function vidLoad(e) {
         vidFile = e.target.files[0];
         wsRegions.clearRegions();
         while (compasses.length > 0)
@@ -380,7 +380,9 @@
         var video = document.getElementById("theVideo");
         video.src = media;
         video.style.display = "block";
-        waveSurfer.load(media);
+        await waveSurfer.load(media);
+        compasses = JSON.parse(localStorage.getItem("comps")) || [];
+        updateAll();
       }
 
       function APILoad(e) {
@@ -389,6 +391,8 @@
         const data = URL.createObjectURL(tabFile);
         settings.file = data;
         api.load(data);
+        compasses = JSON.parse(localStorage.getItem("comps"));
+        updateAll();
       }
 
       var tabFile;
@@ -449,6 +453,17 @@
       }
 
       function updateRegions() {
+        if(wsRegions.getRegions().length < compasses.length){
+            wsRegions.clearRegions();
+            for(var i = 0; i < compasses.length; i++){
+                wsRegions.addRegion({
+                    start: (compasses[i]/1000),
+                    color: 'red',
+                    content: "" + i
+                });
+            }
+            return;
+        }
         wsRegions.getRegions().sort(sortFunction);
         for (var i = 0; i < wsRegions.getRegions().length; i++) {
           wsRegions.getRegions()[i].setOptions({ content: "" + (findIndex(wsRegions.getRegions()[i]) + 1) });
@@ -585,6 +600,7 @@
       var theInterval;
       var pauseStamps = new Array();
       var compasses = new Array();
+      compasses = JSON.parse(localStorage.getItem("comps")) || new Array();
       var videoToTab = new Array(compasses.length);
       //var rememberTime = 0;
 
@@ -831,6 +847,7 @@
       };
 
       function updateAll() {
+        localStorage.setItem("comps", JSON.stringify(compasses));
         updateRegions();
         updateCompasses();
         updateArray();
